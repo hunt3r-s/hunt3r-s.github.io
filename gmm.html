@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2023-02-02 Thu 21:06 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gaussian Mixture Model</title>
+<meta name="author" content="Hunter Smith" />
+<meta name="generator" content="org mode" />
+<meta name="theme-color" content="#77aa99" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Gaussian Mixture Model" />
+<meta property="og:description" content="With Expectation-Maximization for Maximum Likelihood Estimation" />
+<meta property="og:image" content="https://i.postimg.cc/dt9jgBL4/icons8-h-67.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="200" />
+<meta property="og:image:height" content="200" />
+<meta property="og:image:alt" content="Pen" />
+<meta property="og:article:author:first_name" content="Hunter" />
+<meta property="og:article:author:last_name" content="Smith" />
+<meta property="og:article:published_time" content="2022-11-30T00:00:00-0500" />
+<meta property="og:article:modified_time" content="2023-02-02T18:25:01-0500" />
+
+<link href='http://fonts.googleapis.com/css?family=EB+Garamond' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="mergedstyle.css">
+<script>
+// @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt Expat
+function copyPreToClipbord(btn) {
+    const pre = btn.parentElement.parentElement.getElementsByTagName("PRE")[0];
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    range.setEnd(pre.childNodes[pre.childNodes.length-1], 0);
+    window.getSelection().addRange(range);
+    var successful = document.execCommand('copy');
+    window.getSelection().removeRange(range);
+}
+window.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById("text-table-of-contents")) {
+        const sections = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+        const activate = (entry) => {
+            entry.classList.add('active');
+            if (["LI", "UL"].includes(entry.parentElement.tagName)) {
+                activate(entry.parentElement);
+            }
+        };
+        const activateLast = () => {
+            document.querySelectorAll('#text-table-of-contents li.active, #text-table-of-contents ul.active').forEach(a => {
+                a.classList.remove('active')
+            });
+            let mostRecent = { section: sections[0], bottom: -Infinity };
+            const windowHeight = window.innerHeight;
+            sections.forEach((section) => {
+                const bounds = section.getBoundingClientRect()
+                if ( bounds.bottom > mostRecent.bottom && bounds.top < windowHeight ) {
+                    mostRecent = { section, bottom: bounds.bottom };
+                }
+            })
+            activate(document.querySelector(`#text-table-of-contents li a[href="#${mostRecent.section.getAttribute('id')}"]`).parentElement);
+        }
+        const observer = new IntersectionObserver(entries => {
+            activateLast();
+        });
+        sections.forEach((section) => {
+            observer.observe(section);
+        });}
+});
+// @license-end
+</script>
+</head>
+<body>
+    <nav class="nav-main">
+        <img src="graphics/Logo3.png" alt="Decorative HS">
+        <div class="nav-content">
+            <a href="index.html", class="nav-item">Home</a>
+            <a href="#", class="nav-item">Index </a>
+            <a href="#", class="nav-item">About</a>
+            <a href="#", class="nav-item">Contact</a>
+        </div>
+    </nav>
+<div id='page'><label id='switch-label' for='theme-switch'></label><div id="content">
+<header class="page-header"><div class="page-meta"><span class="timestamp-wrapper"><span class="timestamp">30 Nov 2022</span></span>, Hunter Smith</div>
+
+<h1 class="title">Gaussian Mixture Model</h1>
+<p class="subtitle" role="doc-subtitle">With Expectation-Maximization for Maximum Likelihood Estimation</p>
+</header><nav id="table-of-contents">
+<h2><a href="#" style="color:inherit; text-decoration: none;">Table of Contents</a></h2>
+<div id="text-table-of-contents">
+<ul>
+<li><input type='checkbox' id='toc--orgf99f413'/><label for='toc--orgf99f413'><a href="#orgf99f413">1. Getting Started</a></label>
+<ul>
+<li><a href="#orga3ff324">1.1. Features</a></li>
+<li><a href="#org41c2687">1.2. Prerequisites</a></li>
+<li><a href="#org17eaf75">1.3. Build</a></li>
+</ul>
+</li>
+<li><a href="#org69f69a7">2. Usage</a></li>
+<li><input type='checkbox' id='toc--org32a6429'/><label for='toc--org32a6429'><a href="#org32a6429">3. Development</a></label>
+<ul>
+<li><a href="#org798e87f">3.1. Data and external libraries</a></li>
+<li><a href="#org55f353d">3.2. K-means clustering</a></li>
+<li><a href="#org1aa346f">3.3. <span class='acr'>GMM</span></a></li>
+<li><a href="#org0d7eadb">3.4. <span class='acr'>PCA</span></a></li>
+</ul>
+</li>
+<li><a href="#orga7193c4">4. Authors</a></li>
+<li><a href="#org2368351">5. Acknowledgements</a></li>
+</ul>
+</div>
+</nav>
+<div class="abstract" id="orgbf8c985">
+<p>
+The Gaussian Mixture Model (GMM) is a probabilistic model, which assumes the input data comes from a <i>mixture</i> of a finite number of Gaussian distributions with unknown parameters.
+The Expectation-Maximization (EM) method is an iterative algorithm which can be used to estimate the parameters of said GMM.
+The EM algorithm then estimates the maximum likelihood of the data lying in a given cluster (determined by the Gaussians in the GMM), given the parameters.
+GMMs are used in practice for tasks such as unsupervised learning, data clustering, and anomaly detection.
+This is just a personal project to experiment with some common ML practices.
+</p>
+
+</div>
+
+<div id="outline-container-orgf99f413" class="outline-2">
+<h2 id="orgf99f413"><span class="section-number-2">1.</span> Getting Started</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-orga3ff324" class="outline-3">
+<h3 id="orga3ff324"><span class="section-number-3">1.1.</span> Features</h3>
+<div class="outline-text-3" id="text-1-1">
+<ul class="org-ul">
+<li>K-means clustering to form Gaussian distributions</li>
+<li>EM and log probability implemented from scratch</li>
+<li>Vector scaling with PCA</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org41c2687" class="outline-3">
+<h3 id="org41c2687"><span class="section-number-3">1.2.</span> Prerequisites</h3>
+<div class="outline-text-3" id="text-1-2">
+<ul class="org-ul">
+<li>Python 3.x</li>
+<li><a href="https://numpy.org/install/">NumPy</a></li>
+<li><a href="https://matplotlib.org/">Matplotlib</a></li>
+<li><a href="https://scikit-learn.org/stable/datasets.html">scikit-learn</a> (datasets)</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org17eaf75" class="outline-3">
+<h3 id="org17eaf75"><span class="section-number-3">1.3.</span> Build</h3>
+<div class="outline-text-3" id="text-1-3">
+<ul class="org-ul">
+<li>download and run <a href="./gmm.py">gmm.py</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org69f69a7" class="outline-2">
+<h2 id="org69f69a7"><span class="section-number-2">2.</span> Usage</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The file <code>gmm.py</code> implements a Gaussian Mixture Model on the iris dataset from scikit-learn. simply download the file and run it with
+</p>
+<details id='org1f2ef02' class='code' open><summary><span class="lang">shell</span></summary>
+<div class='gutter'>
+<a href='#org1f2ef02'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-sh">python gmm.py
+</pre>
+</div>
+</details>
+<p>
+You will then be prompted to specify the number of clusters you would like the k-means to generate, and the number of iterations the GMM should run.
+The output will look something like this:
+</p>
+
+
+<figure id="orga4b7967">
+<img src="./gmm.png" alt="gmm.png">
+
+<figcaption><span class="figure-number">Figure 1: </span>output of gmm.py</figcaption>
+</figure>
+</div>
+</div>
+
+<div id="outline-container-org32a6429" class="outline-2">
+<h2 id="org32a6429"><span class="section-number-2">3.</span> Development</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-org798e87f" class="outline-3">
+<h3 id="org798e87f"><span class="section-number-3">3.1.</span> Data and external libraries</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+We will not be using any machine learning specific libraries here. We will however, need sklearn&rsquo;s sample datasets, numpy for math, and matplotlib for plotting.
+</p>
+<div class="code" id="orgc1782a5">
+<details id='org8653f6a' class='code' open><summary><span class="lang">Python</span></summary>
+<div class='gutter'>
+<a href='#org8653f6a'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-keyword">import</span> numpy <span class="org-keyword">as</span> np
+<span class="org-keyword">import</span> matplotlib.pyplot <span class="org-keyword">as</span> plt
+<span class="org-keyword">from</span> sklearn <span class="org-keyword">import</span> datasets
+<span class="org-variable-name">dataset</span> = datasets.load_iris()
+<span class="org-variable-name">num_clusters</span> = <span class="org-builtin">int</span>(<span class="org-builtin">input</span>(<span class="org-string">"Enter the number of clusters: "</span>))
+num_iterations = <span class="org-builtin">int</span>(<span class="org-builtin">input</span>(<span class="org-string">"Enter the number of iterations: "</span>))
+</pre>
+</div>
+</details>
+
+</div>
+</div>
+</div>
+<div id="outline-container-org55f353d" class="outline-3">
+<h3 id="org55f353d"><span class="section-number-3">3.2.</span> K-means clustering</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Now we will perform K-means clustering with 4 clusters. The function below takes an array <code>X</code> and returns the means for each cluster using k-means.
+In each iteration, the function computes the distances between each data point and each mean, assigns each data point to the closest mean, and updates the means using the mean of the data points in each cluster.
+</p>
+<details id='org3ac5450' class='code' open><summary><span class="lang">Python</span></summary>
+<div class='gutter'>
+<a href='#org3ac5450'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-keyword">def</span> <span class="org-function-name">initialize_kmeans</span>(X, num_clusters):
+    <span class="org-variable-name">means</span> = X[np.random.choice(X.shape[<span class="org-highlight-numbers-number">0</span>], num_clusters, replace=<span class="org-constant">False</span>), :]
+    <span class="org-keyword">for</span> iteration <span class="org-keyword">in</span> <span class="org-builtin">range</span>(num_iterations):
+        distances = np.array([np.linalg.norm(X - mean, axis=<span class="org-highlight-numbers-number">1</span>) <span class="org-keyword">for</span> mean <span class="org-keyword">in</span> means])
+        labels = np.argmin(distances, axis=<span class="org-highlight-numbers-number">0</span>)
+        <span class="org-keyword">for</span> i <span class="org-keyword">in</span> <span class="org-builtin">range</span>(num_clusters):
+            means[<span class="org-variable-name">i</span>] = np.mean(X[labels == i], axis=<span class="org-highlight-numbers-number">0</span>)
+    <span class="org-keyword">return</span> means
+</pre>
+</div>
+</details>
+
+<p>
+Then we can initialize our inputs for our GMM.
+</p>
+<details id='orgec572e1' class='code' open><summary><span class="lang">Python</span></summary>
+<div class='gutter'>
+<a href='#orgec572e1'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-variable-name">means</span> = initialize_kmeans(X, num_clusters)
+<span class="org-variable-name">covariances</span> = np.array([np.eye(X.shape[<span class="org-highlight-numbers-number">1</span>]) <span class="org-keyword">for</span> _ <span class="org-keyword">in</span> <span class="org-builtin">range</span>(num_clusters)])
+<span class="org-variable-name">mixing_coefficients</span> = np.ones(num_clusters) / num_clusters
+</pre>
+</div>
+</details>
+</div>
+</div>
+
+<div id="outline-container-org1aa346f" class="outline-3">
+<h3 id="org1aa346f"><span class="section-number-3">3.3.</span> <span class='acr'>GMM</span></h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+For our Expectation step, we will need a log-probability funtion. This next function computes the probability density function of a multivariate Gaussian distribution with a given mean and covariance matrix.
+It is comparable to any prob density function from common libraries. It returns an array representing the probability density of the multivariate Gaussian distribution for each data point.
+</p>
+<details id='org415f385' class='code' open><summary><span class="lang">Python</span></summary>
+<div class='gutter'>
+<a href='#org415f385'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-keyword">def</span> <span class="org-function-name">compute_probability</span>(data, mean, covariance):
+    <span class="org-comment-delimiter"># </span><span class="org-comment">Compute the determinant of the covariance matrix</span>
+    <span class="org-variable-name">det</span> = np.linalg.det(covariance)
+    <span class="org-keyword">if</span> det == <span class="org-highlight-numbers-number">0</span>:
+        <span class="org-keyword">raise</span> <span class="org-type">ValueError</span>(<span class="org-string">"The covariance matrix is singular."</span>)
+    inv_cov = np.linalg.inv(covariance)
+    k = data.shape[<span class="org-highlight-numbers-number">1</span>]
+    mean = np.repeat(mean, data.shape[<span class="org-highlight-numbers-number">0</span>]).reshape(data.shape)
+    diff = data - mean
+    prob = (<span class="org-highlight-numbers-number">2</span>*np.pi)**(-k/<span class="org-highlight-numbers-number">2</span>) * det**(-<span class="org-highlight-numbers-number">1</span>/<span class="org-highlight-numbers-number">2</span>) * np.exp(-<span class="org-highlight-numbers-number">1</span>/<span class="org-highlight-numbers-number">2</span> * np.diag(np.dot(diff @ inv_cov, diff.T)))
+    <span class="org-keyword">return</span> prob
+</pre>
+</div>
+</details>
+<p>
+The Pseudocode for the EM is explained as follows:
+In the E-step, the code computes the responsibilities of each component for each data point using the current estimates of means, covariances, and mixing coefficients of the GMM.
+In the M-step, the code updates the estimates of means, covariances, and mixing coefficients based on the responsibilities computed in the E-step.
+The algorithm repeats the E-step and M-step until convergence <i>or</i> the specified number of iterations is reached.
+The means, covariances, and mixing coefficients of the GMM are updated in the M-step by taking weighted averages of the data points based on their responsibilities.
+The updated values of the parameters are then used in the next iteration of the EM algorithm to compute new responsibilities.
+Now we can define the algorithm.
+</p>
+<details id='orgfa8dfaf' class='code' open><summary><span class="lang">Python</span></summary>
+<div class='gutter'>
+<a href='#orgfa8dfaf'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-keyword">for</span> iteration <span class="org-keyword">in</span> <span class="org-builtin">range</span>(num_iterations):
+    <span class="org-comment-delimiter"># </span><span class="org-comment">E-step: compute the responsibilities</span>
+    responsibilities = np.zeros((X.shape[<span class="org-highlight-numbers-number">0</span>], num_clusters))
+    <span class="org-keyword">for</span> i <span class="org-keyword">in</span> <span class="org-builtin">range</span>(num_clusters):
+        <span class="org-variable-name">responsibilities</span>[:, i] = mixing_coefficients[i] * compute_probability(X, means[i], covariances[i])
+    <span class="org-variable-name">responsibilities</span> /= np.<span class="org-builtin">sum</span>(responsibilities, axis=<span class="org-highlight-numbers-number">1</span>, keepdims=<span class="org-constant">True</span>)
+    <span class="org-comment-delimiter"># </span><span class="org-comment">M-step: update the means, covariances, and mixing coefficients</span>
+    N_k = np.<span class="org-builtin">sum</span>(responsibilities, axis=<span class="org-highlight-numbers-number">0</span>)
+    means = (responsibilities.T @ X) / N_k[:, <span class="org-constant">None</span>]
+    covariances = np.zeros((num_clusters, X.shape[<span class="org-highlight-numbers-number">1</span>], X.shape[<span class="org-highlight-numbers-number">1</span>]))
+    <span class="org-keyword">for</span> i <span class="org-keyword">in</span> <span class="org-builtin">range</span>(num_clusters):
+        diff = X - means[i]
+        covariances[<span class="org-variable-name">i</span>] = (diff.T @ (responsibilities[:, i, <span class="org-constant">None</span>] * diff)) / N_k[i]
+    mixing_coefficients = N_k / X.shape[<span class="org-highlight-numbers-number">0</span>]
+labels = np.argmax(responsibilities, axis=<span class="org-highlight-numbers-number">1</span>)
+</pre>
+</div>
+</details>
+</div>
+</div>
+
+<div id="outline-container-org0d7eadb" class="outline-3">
+<h3 id="org0d7eadb"><span class="section-number-3">3.4.</span> <span class='acr'>PCA</span></h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+Now we need a more convenient way to represent our data. We will tranform the data using principal component ananlysis (PCA). This next function subtracts the mean of <code>X</code> along each dimension and computes the covariance matrix.
+Then, it computes the eigenvalues and eigenvectors of the covariance matrix, sorts the eigenvectors by decreasing eigenvalue, and returns  <code>num_components</code> eigenvectors and the transformed data.
+</p>
+<details id='orgee83b16' class='code' open><summary><span class="lang">Python</span></summary>
+<div class='gutter'>
+<a href='#orgee83b16'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-keyword">def</span> <span class="org-function-name">PCA</span>(X, num_components):
+    <span class="org-variable-name">X</span> = X - np.mean(X, axis=<span class="org-highlight-numbers-number">0</span>)
+    covariance = np.cov(X, rowvar=<span class="org-constant">False</span>)
+    eigenvalues, eigenvectors = np.linalg.eig(covariance)
+    idx = eigenvalues.argsort()[::-<span class="org-highlight-numbers-number">1</span>]
+    eigenvalues = eigenvalues[idx]
+    eigenvectors = eigenvectors[:, idx]
+    X_transformed = X @ eigenvectors[:, :num_components]
+    <span class="org-keyword">return</span> X_transformed, eigenvectors
+</pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga7193c4" class="outline-2">
+<h2 id="orga7193c4"><span class="section-number-2">4.</span> Authors</h2>
+<div class="outline-text-2" id="text-4">
+<ul class="org-ul">
+<li><a href="https://github.com/hunt3r-s">@hunt3r-s</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org2368351" class="outline-2">
+<h2 id="org2368351"><span class="section-number-2">5.</span> Acknowledgements</h2>
+<div class="outline-text-2" id="text-5">
+<details id='org36bbe88' class='code' open>
+<summary></summary>
+<div class='gutter'><a href='#org36bbe88'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<pre class="example" id="org36bbe88">
+[[5.9016129  2.7483871  4.39354839 1.43387097]
+ [5.006      3.428      1.462      0.246     ]
+ [6.85       3.07368421 5.74210526 2.07105263]]
+[[[1. 0. 0. 0.]
+  [0. 1. 0. 0.]
+  [0. 0. 1. 0.]
+  [0. 0. 0. 1.]]
+
+ [[1. 0. 0. 0.]
+  [0. 1. 0. 0.]
+  [0. 0. 1. 0.]
+  [0. 0. 0. 1.]]
+
+ [[1. 0. 0. 0.]
+  [0. 1. 0. 0.]
+  [0. 0. 1. 0.]
+  [0. 0. 0. 1.]]]
+[0.33333333 0.33333333 0.33333333]
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0]
+(array([[-2.68412563, -0.31939725],
+       [-2.71414169,  0.17700123],
+       [-2.88899057,  0.14494943],
+       [-2.74534286,  0.31829898],
+       [-2.72871654, -0.32675451],
+       [-2.28085963, -0.74133045],
+       [-2.82053775,  0.08946138],
+       [-2.62614497, -0.16338496],
+       [-2.88638273,  0.57831175],
+       [-2.6727558 ,  0.11377425],
+       [-2.50694709, -0.6450689 ],
+       [-2.61275523, -0.01472994],
+       [-2.78610927,  0.235112  ],
+       [-3.22380374,  0.51139459],
+       [-2.64475039, -1.17876464],
+       [-2.38603903, -1.33806233],
+       [-2.62352788, -0.81067951],
+       [-2.64829671, -0.31184914],
+       [-2.19982032, -0.87283904],
+       [-2.5879864 , -0.51356031],
+       [-2.31025622, -0.39134594],
+       [-2.54370523, -0.43299606],
+       [-3.21593942, -0.13346807],
+       [-2.30273318, -0.09870885],
+       [-2.35575405,  0.03728186],
+       [-2.50666891,  0.14601688],
+       [-2.46882007, -0.13095149],
+       [-2.56231991, -0.36771886],
+       [-2.63953472, -0.31203998],
+       [-2.63198939,  0.19696122],
+       [-2.58739848,  0.20431849],
+       [-2.4099325 , -0.41092426],
+       [-2.64886233, -0.81336382],
+       [-2.59873675, -1.09314576],
+       [-2.63692688,  0.12132235],
+       [-2.86624165, -0.06936447],
+       [-2.62523805, -0.59937002],
+       [-2.80068412, -0.26864374],
+       [-2.98050204,  0.48795834],
+       [-2.59000631, -0.22904384],
+       [-2.77010243, -0.26352753],
+       [-2.84936871,  0.94096057],
+       [-2.99740655,  0.34192606],
+       [-2.40561449, -0.18887143],
+       [-2.20948924, -0.43666314],
+       [-2.71445143,  0.2502082 ],
+       [-2.53814826, -0.50377114],
+       [-2.83946217,  0.22794557],
+       [-2.54308575, -0.57941002],
+       [-2.70335978, -0.10770608],
+       [ 1.28482569, -0.68516047],
+       [ 0.93248853, -0.31833364],
+       [ 1.46430232, -0.50426282],
+       [ 0.18331772,  0.82795901],
+       [ 1.08810326, -0.07459068],
+       [ 0.64166908,  0.41824687],
+       [ 1.09506066, -0.28346827],
+       [-0.74912267,  1.00489096],
+       [ 1.04413183, -0.2283619 ],
+       [-0.0087454 ,  0.72308191],
+       [-0.50784088,  1.26597119],
+       [ 0.51169856,  0.10398124],
+       [ 0.26497651,  0.55003646],
+       [ 0.98493451,  0.12481785],
+       [-0.17392537,  0.25485421],
+       [ 0.92786078, -0.46717949],
+       [ 0.66028376,  0.35296967],
+       [ 0.23610499,  0.33361077],
+       [ 0.94473373,  0.54314555],
+       [ 0.04522698,  0.58383438],
+       [ 1.11628318,  0.08461685],
+       [ 0.35788842,  0.06892503],
+       [ 1.29818388,  0.32778731],
+       [ 0.92172892,  0.18273779],
+       [ 0.71485333, -0.14905594],
+       [ 0.90017437, -0.32850447],
+       [ 1.33202444, -0.24444088],
+       [ 1.55780216, -0.26749545],
+       [ 0.81329065,  0.1633503 ],
+       [-0.30558378,  0.36826219],
+       [-0.06812649,  0.70517213],
+       [-0.18962247,  0.68028676],
+       [ 0.13642871,  0.31403244],
+       [ 1.38002644,  0.42095429],
+       [ 0.58800644,  0.48428742],
+       [ 0.80685831, -0.19418231],
+       [ 1.22069088, -0.40761959],
+       [ 0.81509524,  0.37203706],
+       [ 0.24595768,  0.2685244 ],
+       [ 0.16641322,  0.68192672],
+       [ 0.46480029,  0.67071154],
+       [ 0.8908152 ,  0.03446444],
+       [ 0.23054802,  0.40438585],
+       [-0.70453176,  1.01224823],
+       [ 0.35698149,  0.50491009],
+       [ 0.33193448,  0.21265468],
+       [ 0.37621565,  0.29321893],
+       [ 0.64257601, -0.01773819],
+       [-0.90646986,  0.75609337],
+       [ 0.29900084,  0.34889781],
+       [ 2.53119273,  0.00984911],
+       [ 1.41523588,  0.57491635],
+       [ 2.61667602, -0.34390315],
+       [ 1.97153105,  0.1797279 ],
+       [ 2.35000592,  0.04026095],
+       [ 3.39703874, -0.55083667],
+       [ 0.52123224,  1.19275873],
+       [ 2.93258707, -0.3555    ],
+       [ 2.32122882,  0.2438315 ],
+       [ 2.91675097, -0.78279195],
+       [ 1.66177415, -0.24222841],
+       [ 1.80340195,  0.21563762],
+       [ 2.1655918 , -0.21627559],
+       [ 1.34616358,  0.77681835],
+       [ 1.58592822,  0.53964071],
+       [ 1.90445637, -0.11925069],
+       [ 1.94968906, -0.04194326],
+       [ 3.48705536, -1.17573933],
+       [ 3.79564542, -0.25732297],
+       [ 1.30079171,  0.76114964],
+       [ 2.42781791, -0.37819601],
+       [ 1.19900111,  0.60609153],
+       [ 3.49992004, -0.4606741 ],
+       [ 1.38876613,  0.20439933],
+       [ 2.2754305 , -0.33499061],
+       [ 2.61409047, -0.56090136],
+       [ 1.25850816,  0.17970479],
+       [ 1.29113206,  0.11666865],
+       [ 2.12360872,  0.20972948],
+       [ 2.38800302, -0.4646398 ],
+       [ 2.84167278, -0.37526917],
+       [ 3.23067366, -1.37416509],
+       [ 2.15943764,  0.21727758],
+       [ 1.44416124,  0.14341341],
+       [ 1.78129481,  0.49990168],
+       [ 3.07649993, -0.68808568],
+       [ 2.14424331, -0.1400642 ],
+       [ 1.90509815, -0.04930053],
+       [ 1.16932634,  0.16499026],
+       [ 2.10761114, -0.37228787],
+       [ 2.31415471, -0.18365128],
+       [ 1.9222678 , -0.40920347],
+       [ 1.41523588,  0.57491635],
+       [ 2.56301338, -0.2778626 ],
+       [ 2.41874618, -0.3047982 ],
+       [ 1.94410979, -0.1875323 ],
+       [ 1.52716661,  0.37531698],
+       [ 1.76434572, -0.07885885],
+       [ 1.90094161, -0.11662796],
+       [ 1.39018886,  0.28266094]]), array([[ 0.36138659, -0.65658877, -0.58202985,  0.31548719],
+       [-0.08452251, -0.73016143,  0.59791083, -0.3197231 ],
+       [ 0.85667061,  0.17337266,  0.07623608, -0.47983899],
+       [ 0.3582892 ,  0.07548102,  0.54583143,  0.75365743]]))
+</pre>
+
+</details>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2022-11-30 Wed 00:00</p>
+<p class="author">Author: Hunter Smith</p>
+<p class="date">Created: 2023-02-02 Thu 21:06</p>
+</div>
+</div>
+</body>
+</html>
