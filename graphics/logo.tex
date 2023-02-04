@@ -1,0 +1,36 @@
+\documentclass[]{standalone}
+\usepackage{xcolor}
+\definecolor{accent}{HTML}{934040}
+\definecolor{def}{HTML}{934040}
+\definecolor{rem}{HTML}{409340}
+\definecolor{fractal}{HTML}{934040}
+\definecolor{titlepage}{HTML}{8FA1A8}
+\usepackage{tikzpagenodes}
+\usepackage{wallpaper}
+\usepackage{fontspec}
+\usepackage{xunicode}
+\usepackage{microtype}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont[RawFeature={+ss05,+dlig,+hlig,+calt,+liga},ItalicFeatures={RawFeature={+cv04,+clig,+swsh,+calt,+liga,+hlig,+ss05},CharacterVariant=5:0}]{EB Garamond}
+\pagenumbering{gobble}
+\definecolor{christmas}{HTML}{b12424}
+\renewcommand{\c}[1]{{\color{christmas}#1}}
+\usepackage{tikz}
+\usetikzlibrary{matrix,fit,chains,calc,scopes,angles,intersections,quotes,through}
+\usepackage{psvectorian}
+\usepackage{pst-fractal}
+\usepackage{fontspec}
+\usepackage{lettrine} % versals
+\newfontface{\initials}{EB Garamond Initials} % versal font
+\renewcommand{\LettrineFontHook}{\color{accent}\initials} % color versal
+\renewcommand*{\psvectorianDefaultColor}{accent}%
+\pagecolor{titlepage}
+\begin{document}
+% Image, Replace for each title
+%\begin{pspicture}[showgrid=true ](-4,-1)(4,5)
+%\psPTree[linecolor=rem, c=0.55,linewidth=.8pt]
+%\psdot*(0,0) \end{pspicture}
+%\rput[r](-115.9pt,22.4pt){\psvectorian[width=.25\textwidth]{72}}
+%\rput[l](-115.9pt,22.4pt){\psvectorian[width=.25\textwidth]{73}}
+\lettrine{T}{}
+\end{document}
