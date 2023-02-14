@@ -326,6 +326,7 @@ button,
 .nav-icons {
     position: fixed;
     margin-top: 30%;
+    margin-left: 5%;
 }
 
 /* Style the icon bar links */
@@ -444,6 +445,7 @@ blockquote > p {
   nav-icons{
   position: inherit;
   margin-top: 1em;
+  margin-left: 5%;
 }
   nav-icons > a {
   position: absolute;
