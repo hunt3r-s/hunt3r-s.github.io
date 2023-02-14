@@ -1,0 +1,427 @@
+/*
+    AUTHOR: Hunter Smith | https://www.github.com/hunt3r-s/
+    PAGE SOURCE: https://github.com/hunt3r-s/hunt3r-s.github.io/blob/main/style.css
+    CREATED: 01/28/2023
+    LICENSE:
+    Copyright <2023><Hunter Smith>
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of
+    this software and associated documentation files (the “Software”), to deal in
+    the Software without restriction, including without limitation the rights to use,
+    copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+    Software, and to permit persons to whom the Software is furnished to do so.
+
+    THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+    THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+
+/**
+ * CONTENTS
+ *
+ * GLOBALS
+ *
+ * BASE
+ * Subsection 1...............desc.
+ *
+ * LAYOUT
+ * Subsection 1...............desc.
+ *
+ * MODULE
+ * Subsection 1........desc.
+ * Subsection 2...........desc.
+ *
+ *
+ */
+
+
+/*------------------------------------*\
+  #GLOBALS
+\*------------------------------------*/
+@media (prefers-color-scheme: light) {
+  :root {
+    /* Font */
+    --serif-header: normal 4.2em serif;
+    --serif-subheader: normal 3.2em serif;
+    --serif-subsubheader: italic 2.7em serif;
+    --serif-text: normal 2em serif;
+    --serif-italic: italic 1.7em serif;
+    --serif-light: normal lighter 2em serif;
+    --serif-heavy: normal bolder 2em serif;
+    --sans-header: normal 4.2em sans-serif;
+    --sans-subheader: normal 3.2em sans-serif;
+    --sans-subsubheader: normal 2.7em sans-serif;
+    --sans-text: normal 2em sans-serif;
+    --sans-light: normal 2em lighter sans-serif;
+    --sans-heavy: normal bolder 2em sans-serif;
+    --mono-header: normal 2.5em monospace;
+    --mono-subheader: normal 1.7em monospace;
+    --mono-subsubheader: normal 1.4emmonospace;
+    --mono-text: normal  1em monospace;
+    --mono-light: normal lighter 1em monospace;
+    --mono-heavy: normal bolder 1em monospace;
+    /* Border */
+    /* Margin sizes */
+    --margin-small: 0 0.5em;
+    --margin-medium: 0.5em 1em;
+    --margin-large: 1em 2em;
+    /* Padding */
+    --padding-small: 0 0.5em;
+    --padding-medium: 0.5em 1em;
+    --padding-large: 1em 2em;
+    /* Suffix -light for light mode */
+    --page-light: #F6F3EA;
+    --page-secondary-light: #D1CEC7;
+    --accent-light:  #934040;
+    --accent2-light: #7E86A8;
+    --code-foreground-light: #2c3e50;
+	  --code-background-light: #efefef;
+	  --code-func-light: #6c3163;
+	  --code-const-light: #4e3163;
+	  --code-regex-light: #655370;
+	  --text-light-light: #7b7b7b;
+	  --text-gray-light: #444;
+	  --text-medium-light: #222;
+	  --text-dark-light: #000;
+
+}
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Font */
+    --serif-header: normal 4.2em serif;
+    --serif-subheader: normal 3.2em serif;
+    --serif-subsubheader: italic 2.7em serif;
+    --serif-text: normal 2em serif;
+    --serif-italic: italic 1.7em serif;
+    --serif-light: normal lighter 2em serif;
+    --serif-heavy: normal bolder 2em serif;
+    --sans-header: normal 4.2em sans-serif;
+    --sans-subheader: normal 3.2em sans-serif;
+    --sans-subsubheader: normal 2.7em sans-serif;
+    --sans-text: normal 2em sans-serif;
+    --sans-light: normal 2em lighter sans-serif;
+    --sans-heavy: normal bolder 2em sans-serif;
+    --mono-header: normal 2.5em monospace;
+    --mono-subheader: normal 1.7em monospace;
+    --mono-subsubheader: normal 1.4emmonospace;
+    --mono-text: normal  1em monospace;
+    --mono-light: normal lighter 1em monospace;
+    --mono-heavy: normal bolder 1em monospace;
+    /* Border */
+    /* Margin sizes */
+    --margin-small: 0 0.5em;
+    --margin-medium: 0.5em 1em;
+    --margin-large: 1em 2em;
+    /* Padding */
+    --padding-small: 0 0.5em;
+    --padding-medium: 0.5em 1em;
+    --padding-large: 1em 2em;
+    /* Suffix -light for light mode */
+    --page-light: #2D3036;
+    --page-secondary-light: #D1CEC7;
+    --accent-light:  #934040;
+    --accent2-light: #7E86A8;
+    --code-foreground-light: #2c3e50;
+	  --code-background-light: #efefef;
+	  --code-func-light: #6c3163;
+	  --code-const-light: #4e3163;
+	  --code-regex-light: #655370;
+	  --text-light-light: #7b7b7b;
+	  --text-gray-light: #444;
+	  --text-medium-light: #222;
+	  --text-dark-light: #000;
+}
+}
+
+
+
+
+/*------------------------------------*\
+  #BASE
+\*------------------------------------*/
+
+/*! much of #BASE is adapted from normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
+html {
+    /* Correct the line height in all browsers. */
+    line-height: 1.15;
+    /* Prevent adjustments of font size after orientation changes in iOS. */
+    -webkit-text-size-adjust: 100%;
+}
+
+header {
+  margin: 0;
+}
+
+body {
+    /* Remove the margin in all browsers. */
+    margin: 0;
+    /* Background color for page */
+    background-color: var(--page-light);
+}
+
+main {
+    /* Render the `main` element consistently in IE. */
+    display: block;
+}
+
+footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Heading styles */
+h1 {
+    /*
+     * Correct the font size and margin on `h1` elements within `section` and
+     * `article` contexts in Chrome, Firefox, and Safari.
+     */
+    margin: 0.67em 0;
+	  padding-left: 30px;
+	  position: relative;
+	  color: var(--accent-light);
+    font: var(--serif-header);
+}
+h2 {
+	  margin-bottom: 0;
+	  padding-left: 30px;
+	  margin-left: -30px;
+	  position: relative;
+	  color: var(--accent-light);
+    font: var(--serif-subheader);
+}
+h3,h4,h5,h6 {
+	  margin-bottom: 0;
+	  padding-left: 30px;
+	  margin-left: -30px;
+	  position: relative;
+    font: var(--serif-subsubheader)
+}
+
+p {
+  font: var(--serif-text);
+  text-align: left;
+}
+
+
+a {
+    background-color: transparent; /* Remove the gray background on active links in IE 10. */
+    text-decoration: none;
+}
+
+/**
+ * 1. Remove the bottom border in Chrome 57-
+ * 2. Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
+ */
+
+abbr[title] {
+    border-bottom: none; /* 1 */
+    text-decoration: underline; /* 2 */
+    text-decoration: underline dotted; /* 2 */
+}
+
+/**
+ * Add the correct font weight in Chrome, Edge, and Safari.
+ */
+
+b,
+strong {
+    font-weight: bolder;
+}
+
+/**
+ * Add the correct font size in all browsers.
+ */
+
+small {
+    font-size: 80%;
+}
+
+
+/**
+ * Remove the border on images inside links in IE 10.
+ */
+
+img {
+    border-style: none;
+}
+
+
+button,
+input {
+    font-family: inherit; /* 1 */
+    font-size: 100%; /* 1 */
+    line-height: 1.15; /* 1 */
+    margin: 0; /* 2 */
+    /**
+     * Show the overflow in IE.
+     * 1. Show the overflow in Edge.
+     */
+    overflow: visible;
+}
+
+/**
+ * Correct the inability to style clickable types in iOS and Safari.
+ */
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+    -webkit-appearance: button;
+}
+
+
+/*------------------------------------*\
+  #LAYOUT
+\*------------------------------------*/
+
+/* Main page header */
+.header-sitenav {
+    display: flex;
+    justify-content: space-between;
+    height: 6em;
+    border: thick inset var(--page-secondary-light);
+    padding: var(--padding-small);
+    background-color: var(--accent2-light);
+}
+
+/* Homepage styles */
+.main-homepage{
+    text-align: center;
+    margin: 0 25%;
+}
+
+
+/*------------------------------------*\
+  #MODULE
+\*------------------------------------*/
+
+/* Header hyperlink style */
+.header-links{
+    height: 75px;
+	  display: flex;
+    align-items: center;
+	  color: var(--accent-light);
+    font: var(--serif-subheader);
+}
+
+.header-links > a{
+  color: inherit;
+  padding: 1em;
+  font: var(--serif-subheader);
+  font-size: 1em;
+}
+
+.header-links > a:hover {
+  text-decoration: underline;
+}
+
+/* Home Page side icons */
+.nav-icons {
+    position: fixed;
+    margin-top: 35%;
+}
+
+/* Style the icon bar links */
+.nav-icons > a {
+    color: black;
+    display: block;
+    text-align: center;
+    padding: 16px;
+    transition: all 0.2s ease-in-out;
+    font-size: 4em;
+}
+.nav-icons > a > i:hover {
+  color: black;
+  text-shadow: 0 0 30px var(--accent2-light);
+}
+
+/* Quote of the day */
+.qotd{
+    display: flex;
+    position: fixed;
+		width: 20%;
+		right: 1rem;
+		top: 6.625em;
+		padding: 1em;
+		line-height: 1.5;
+		margin-top: 4rem
+}
+.qotd > h2 {
+  position: inherit;
+  padding-left: 2%;
+}
+
+.qotd > h2 > a {
+  color: inherit
+}
+.qotd > h2 > a:hover {
+  text-decoration: underline;
+}
+
+blockquote > p {
+  font: var(--serif-italic)
+}
+
+.qotd > blockquote {
+    padding-top: 0;
+    border-left: thin solid grey;
+    padding-left: inherit;
+    margin-top: 18%;
+    margin-left: inherit;
+}
+
+
+
+/* Main page image box */
+.img-box {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 4px 4px;
+}
+
+.img-column {
+    flex: 20%;
+    max-width: 20%;
+    padding: 0 4px;
+}
+
+.img-column img {
+    margin-top: 8px;
+    vertical-align: middle;
+    width: 100%;
+}
+
+/* Main page blog posts */
+
+.blog-post {
+  text-align: left;
+  list-style: none;
+}
+
+/* Contact links */
+.nav-contact {
+
+}
+
+/* Style the icon bar links */
+.nav-contact > a {
+    color: black;
+    text-align: center;
+    padding: 16px;
+    transition: all 0.2s ease-in-out;
+    font-size: 3em;
+}
+.nav-contact > a:hover {
+  color: black;
+  text-shadow: 0 0 30px var(--accent2-light);
+}
