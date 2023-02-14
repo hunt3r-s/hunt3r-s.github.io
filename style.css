@@ -186,23 +186,18 @@ h1 {
      * `article` contexts in Chrome, Firefox, and Safari.
      */
     margin: 0.67em 0;
-	  padding-left: 30px;
 	  position: relative;
 	  color: var(--accent-light);
     font: var(--serif-header);
 }
 h2 {
 	  margin-bottom: 0;
-	  padding-left: 30px;
-	  margin-left: -30px;
 	  position: relative;
 	  color: var(--accent-light);
     font: var(--serif-subheader);
 }
 h3,h4,h5,h6 {
 	  margin-bottom: 0;
-	  padding-left: 30px;
-	  margin-left: -30px;
 	  position: relative;
     font: var(--serif-subsubheader)
 }
@@ -308,7 +303,7 @@ button,
 
 /* Header hyperlink style */
 .header-links{
-    height: 75px;
+    height: 80%;
 	  display: flex;
     align-items: center;
 	  color: var(--accent-light);
@@ -329,7 +324,7 @@ button,
 /* Home Page side icons */
 .nav-icons {
     position: fixed;
-    margin-top: 35%;
+    margin-top: 30%;
 }
 
 /* Style the icon bar links */
@@ -337,7 +332,7 @@ button,
     color: var(--icon);
     display: block;
     text-align: center;
-    padding: 16px;
+    padding: 12px;
     transition: all 0.2s ease-in-out;
     font-size: 4em;
 }
@@ -351,15 +346,18 @@ button,
     display: flex;
     position: fixed;
 		width: 20%;
+    white-space: normal;
 		right: 1rem;
 		top: 6.625em;
 		padding: 1em;
 		line-height: 1.5;
 		margin-top: 4rem
 }
+
 .qotd > h2 {
-  position: inherit;
+  position: absolute;
   padding-left: 2%;
+  margin-top: 0;
 }
 
 .qotd > h2 > a {
@@ -374,10 +372,10 @@ blockquote > p {
 }
 
 .qotd > blockquote {
-    padding-top: 0;
+    padding-top: 5%;
     border-left: thin solid grey;
     padding-left: inherit;
-    margin-top: 18%;
+    margin-top: 20%;
     margin-left: inherit;
 }
 
@@ -426,4 +424,31 @@ blockquote > p {
 .nav-contact > a:hover {
   color: var(--icon);
   text-shadow: 0 0 30px var(--accent2-light);
+}
+
+
+@media (max-width: 840px){
+  .header-sitenav {
+  width: 100%;
+}
+  .qotd {
+  margin: 1em 5% 1em 5%;
+  width: auto;
+  position: inherit;
+}
+  .qotd > h2 {
+  position: absolute;
+}
+  nav-icons{
+  position: inherit;
+  margin-top: 1em;
+}
+  nav-icons > a {
+  position: absolute;
+  display: contents;
+}
+  .main-homepage{
+    text-align: center;
+    margin: 0 10%;
+}
 }
