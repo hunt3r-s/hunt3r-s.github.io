@@ -322,6 +322,7 @@ button,
 }
 
 /* Home Page side icons */
+@media (min-width: 840px) {
 .nav-icons {
     position: fixed;
     margin-top: 30%;
@@ -335,6 +336,7 @@ button,
     padding: 12px;
     transition: all 0.2s ease-in-out;
     font-size: 4em;
+}
 }
 .nav-icons > a > i:hover {
   color: var(--icon);
@@ -446,7 +448,13 @@ blockquote > p {
   nav-icons > a {
   position: absolute;
   display: contents;
+  color: var(--icon);
+  text-align: center;
+  padding: 12px;
+  transition: all 0.2s ease-in-out;
+  font-size: 4em;
 }
+
   .main-homepage{
     text-align: center;
     margin: 0 10%;
