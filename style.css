@@ -303,7 +303,6 @@ button,
 
 /* Header hyperlink style */
 .header-links{
-    height: 80%;
 	  display: flex;
     align-items: center;
 	  color: var(--accent-light);
@@ -433,6 +432,13 @@ blockquote > p {
 @media (max-width: 840px){
   .header-sitenav {
   width: 100%;
+}
+  .header-links{
+	  display: flex;
+    align-items: center;
+	  color: var(--accent-light);
+    font: var(--serif-subheader);
+    font-size: 2em;
 }
   .qotd {
   margin: 1em 5% 1em 5%;
