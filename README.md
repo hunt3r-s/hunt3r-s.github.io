@@ -1,4 +1,5 @@
-# ![](./graphics/Logo3.png "HS site logo") [Hunter Smith's Website](https://hunt3r-s.github.io/)
+# ![](./graphics/Logo3.png "HS site logo")
+[Hunter Smith's Website](https://hunt3r-s.github.io/)
 
 A personal website to store some of my projects/notes
 
