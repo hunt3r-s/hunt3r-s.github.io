@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2023-01-27 Fri 14:42 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Compiler</title>
+<meta name="author" content="Hunter Smith" />
+<meta name="generator" content="org mode" />
+<meta name="theme-color" content="#77aa99" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Compiler" />
+<meta property="og:description" content="A C Implemenation of a PL/0 Compiler" />
+<meta property="og:article:author:first_name" content="Hunter" />
+<meta property="og:article:author:last_name" content="Smith" />
+<meta property="og:article:published_time" content="2022-11-30T00:00:00-0500" />
+<meta property="og:article:modified_time" content="2023-02-02T18:25:01-0500" />
+
+<link href='http://fonts.googleapis.com/css?family=EB+Garamond' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="orgstyle.css">
+<script>
+// @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt Expat
+function copyPreToClipbord(btn) {
+    const pre = btn.parentElement.parentElement.getElementsByTagName("PRE")[0];
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    range.setEnd(pre.childNodes[pre.childNodes.length-1], 0);
+    window.getSelection().addRange(range);
+    var successful = document.execCommand('copy');
+    window.getSelection().removeRange(range);
+}
+window.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById("text-table-of-contents")) {
+        const sections = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+        const activate = (entry) => {
+            entry.classList.add('active');
+            if (["LI", "UL"].includes(entry.parentElement.tagName)) {
+                activate(entry.parentElement);
+            }
+        };
+        const activateLast = () => {
+            document.querySelectorAll('#text-table-of-contents li.active, #text-table-of-contents ul.active').forEach(a => {
+                a.classList.remove('active')
+            });
+            let mostRecent = { section: sections[0], bottom: -Infinity };
+            const windowHeight = window.innerHeight;
+            sections.forEach((section) => {
+                const bounds = section.getBoundingClientRect()
+                if ( bounds.bottom > mostRecent.bottom && bounds.top < windowHeight ) {
+                    mostRecent = { section, bottom: bounds.bottom };
+                }
+            })
+            activate(document.querySelector(`#text-table-of-contents li a[href="#${mostRecent.section.getAttribute('id')}"]`).parentElement);
+        }
+        const observer = new IntersectionObserver(entries => {
+            activateLast();
+        });
+        sections.forEach((section) => {
+            observer.observe(section);
+        });}
+});
+// @license-end
+</script>
+</head>
+<body>
+    <nav class="nav-main">
+        <img src="graphics/Logo3.png" alt="Decorative HS">
+        <div class="nav-content">
+            <a href="index.html", class="nav-item">Home</a>
+            <a href="#", class="nav-item">Index </a>
+            <a href="#", class="nav-item">About</a>
+            <a href="#", class="nav-item">Contact</a>
+        </div>
+    </nav>
+<div id='page'><label id='switch-label' for='theme-switch'></label><div id="content">
+<header class="page-header"><div class="page-meta">January 24 2023, Hunter Smith</div>
+<h1 class="title">Compiler</h1>
+<p class="subtitle" role="doc-subtitle">A C Implemenation of a PL/0 Compiler</p>
+</header><nav id="table-of-contents">
+<h2><a href="#" style="color:inherit; text-decoration: none;">Table of Contents</a></h2>
+<div id="text-table-of-contents">
+<ul>
+<li><input type='checkbox' id='toc--org5e88530'/><label for='toc--org5e88530'><a href="#org5e88530">1. Getting Started</a></label>
+<ul>
+<li><a href="#org4024751">1.1. Requirements</a></li>
+<li><a href="#orgd5b0836">1.2. Build</a></li>
+<li><a href="#orgf3caaab">1.3. Usage</a></li>
+</ul>
+</li>
+<li><input type='checkbox' id='toc--orgc06bc7c'/><label for='toc--orgc06bc7c'><a href="#orgc06bc7c">2. Development</a></label>
+<ul>
+<li><a href="#org03a575f">2.1. P-Machine</a></li>
+<li><a href="#orgea7999e">2.2. Lexical Analysis</a></li>
+<li><a href="#org06403ea">2.3. Parser</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<p>
+PL/0 is a programming language developed by Niklaus Wirth, he describes it as a language close to PASCAL,
+but with simpler syntax(Wirth 1976).
+This language serves as an achievable target for which to develop a functioning compiler.
+In particular, integers are the only data type, and programs are limited to the calls:
+<b>IF</b>, <b>WHILE</b>, and <b>PROCEDURE</b>.
+</p>
+
+<div id="outline-container-org5e88530" class="outline-2">
+<h2 id="org5e88530"><span class="section-number-2">1.</span> Getting Started</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org4024751" class="outline-3">
+<h3 id="org4024751"><span class="section-number-3">1.1.</span> Requirements</h3>
+<div class="outline-text-3" id="text-1-1">
+<ul class="org-ul">
+<li>C compatible compiler</li>
+<li><a href="file:///PL0.zip">PL/0 source file</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgd5b0836" class="outline-3">
+<h3 id="orgd5b0836"><span class="section-number-3">1.2.</span> Build</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+To obtain your own C-based PL/0 compiler, simply extract the <a href="file:///pl0">source file</a>,
+then, from the command line, run the following:
+</p>
+<details id='org4b9a146' class='code' open><summary><span class="lang">shell</span></summary>
+<div class='gutter'>
+<a href='#org4b9a146'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-sh"><span class="org-type">cd</span> /path/to/PL0
+gcc -o output driver.c lex.c parser.c vm.c
+</pre>
+</div>
+</details>
+</div>
+</div>
+
+<div id="outline-container-orgf3caaab" class="outline-3">
+<h3 id="orgf3caaab"><span class="section-number-3">1.3.</span> Usage</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+The compiler reads a .txt file as a PL/0 program and returns the output.
+Here is an example of compiling a program contained in a file called <code>input.txt</code>.
+</p>
+<details id='org2dc54e6' class='code' open><summary><span class="lang">shell</span></summary>
+<div class='gutter'>
+<a href='#org2dc54e6'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-sh">./output.out input.txt
+</pre>
+</div>
+</details>
+<p>
+There are four optional arguments to get more information from the output:
+</p>
+<ul class="org-ul">
+<li>print stack trace</li>
+<li>print symbol table</li>
+<li>print lexeme table</li>
+<li>print assembly code</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc06bc7c" class="outline-2">
+<h2 id="orgc06bc7c"><span class="section-number-2">2.</span> Development</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+This section covers the process of creating the compiler.
+</p>
+</div>
+<div id="outline-container-org03a575f" class="outline-3">
+<h3 id="org03a575f"><span class="section-number-3">2.1.</span> P-Machine</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Before anything else, we must first provide a space for our compiler to exist in. We accomplish this by implementing a virtual machine known as a P-machine.
+This machine contains a process address space which is divided into an execution text and an instruction stack. There are fields for each instruction in the stack:
+</p>
+<ul class="org-ul">
+<li><b>OP</b> the operation code</li>
+<li><b>L</b> the lexical level</li>
+<li><b>M</b> a modifier operator</li>
+</ul>
+
+<p>
+Here is an example of an identifier
+</p>
+<ul class="org-ul">
+<li><b>LIT 0,M</b> push M onto stack</li>
+</ul>
+
+<p>
+For each of the instructions, there is a <i>fetch</i> step and an <i>execute</i> step. The instruction is <i>fetched</i> from the execution text and placed in the stack, then the instruction is
+<i>executed</i> based on its <b>OP</b>, and <b>L</b> is updated accordingly.
+Using the <code>-v</code> option, we can produce the output of our P-machine:
+</p>
+<details id='orgd56e8b7' class='code' open><summary><span class="lang">shell</span></summary>
+<div class='gutter'>
+<a href='#orgd56e8b7'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-sh">./output pl0.txt -v
+</pre>
+</div>
+</details>
+<div id='org163473a' class='table'>
+<div class='gutter'><a href='#org163473a'>#</a></div>
+<div class='tabular'>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">VM</td>
+<td class="org-right">Execution:</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">PC</td>
+<td class="org-right">BP</td>
+<td class="org-right">SP</td>
+<td class="org-right">stack</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">Initial</td>
+<td class="org-right">values:</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">0</td>
+<td class="org-right">177</td>
+<td class="org-right">176</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">JMP</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">177</td>
+<td class="org-right">176</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">INC</td>
+<td class="org-right">0</td>
+<td class="org-right">4</td>
+<td class="org-right">6</td>
+<td class="org-right">177</td>
+<td class="org-right">180</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-right">9</td>
+<td class="org-right">177</td>
+<td class="org-right">181</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">2</td>
+<td class="org-right">12</td>
+<td class="org-right">177</td>
+<td class="org-right">182</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">5</td>
+<td class="org-right">15</td>
+<td class="org-right">177</td>
+<td class="org-right">183</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">5</td>
+</tr>
+
+<tr>
+<td class="org-left">MUL</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-right">18</td>
+<td class="org-right">177</td>
+<td class="org-right">182</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-right">10</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">ADD</td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">21</td>
+<td class="org-right">177</td>
+<td class="org-right">181</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">13</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">28</td>
+<td class="org-right">24</td>
+<td class="org-right">177</td>
+<td class="org-right">182</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">13</td>
+<td class="org-right">28</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">4</td>
+<td class="org-right">27</td>
+<td class="org-right">177</td>
+<td class="org-right">183</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">13</td>
+<td class="org-right">28</td>
+<td class="org-right">4</td>
+</tr>
+
+<tr>
+<td class="org-left">DIV</td>
+<td class="org-right">0</td>
+<td class="org-right">4</td>
+<td class="org-right">30</td>
+<td class="org-right">177</td>
+<td class="org-right">182</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">13</td>
+<td class="org-right">7</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">SUB</td>
+<td class="org-right">0</td>
+<td class="org-right">2</td>
+<td class="org-right">33</td>
+<td class="org-right">177</td>
+<td class="org-right">181</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">6</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">STO</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-right">36</td>
+<td class="org-right">177</td>
+<td class="org-right">180</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">6</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">LOD</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-right">39</td>
+<td class="org-right">177</td>
+<td class="org-right">181</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">6</td>
+<td class="org-right">6</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">WRT</td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">Output</td>
+<td class="org-right">:</td>
+<td class="org-right">6</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">&#x2026;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+
+
+<p>
+This full process is handled in <a href="file:///vm.c">vm.c</a>.
+</p>
+</div>
+</div>
+<div id="outline-container-orgea7999e" class="outline-3">
+<h3 id="orgea7999e"><span class="section-number-3">2.2.</span> Lexical Analysis</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+ Now that the program's steps have been ordered sequentially, we need to categorize the input.
+ To do this, we will store the input in a lexeme table. This is a table of key value pairs of the type <i>(symbol, token)</i>
+ where <i>token</i> is the data type, and <i>symbol</i> is the character. This is best explained with an example, we can print the symbol table using the
+<code>-l</code> option.
+</p>
+<details id='org899d77e' class='code' open><summary><span class="lang">shell</span></summary>
+<div class='gutter'>
+<a href='#org899d77e'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-sh">./output pl0.txt -l
+</pre>
+</div>
+</details>
+<div id='org21229c2' class='table'>
+<div class='gutter'><a href='#org21229c2'>#</a></div>
+<div class='tabular'>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Lexeme</td>
+<td class="org-right">List:</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">lexeme</td>
+<td class="org-right">token</td>
+<td class="org-left">type</td>
+</tr>
+
+<tr>
+<td class="org-left">const</td>
+<td class="org-right">3</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">a</td>
+<td class="org-right">1</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">:=</td>
+<td class="org-right">18</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">3</td>
+<td class="org-right">2</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">;</td>
+<td class="org-right">20</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">var</td>
+<td class="org-right">4</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">b</td>
+<td class="org-right">1</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">;</td>
+<td class="org-right">20</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">begin</td>
+<td class="org-right">7</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">def</td>
+<td class="org-right">16</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">b</td>
+<td class="org-right">1</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">:=</td>
+<td class="org-right">18</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">a</td>
+<td class="org-right">1</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">+</td>
+<td class="org-right">29</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">2</td>
+<td class="org-right">2</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">*</td>
+<td class="org-right">30</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">5</td>
+<td class="org-right">2</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">-</td>
+<td class="org-right">19</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">(</td>
+<td class="org-right">32</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">28</td>
+<td class="org-right">2</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">4</td>
+<td class="org-right">2</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">)</td>
+<td class="org-right">33</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">;</td>
+<td class="org-right">20</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">write</td>
+<td class="org-right">15</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">(</td>
+<td class="org-right">32</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">b</td>
+<td class="org-right">1</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">)</td>
+<td class="org-right">33</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+
+
+<p>
+Looking at the output, we can see that each character or keyword has an associated token value.
+</p>
+</div>
+</div>
+<div id="outline-container-org06403ea" class="outline-3">
+<h3 id="org06403ea"><span class="section-number-3">2.3.</span> Parser</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Now that the input is categorized and ordered, we need to parse the input to perform what it is instructing us to do.
+This step is essentially translating the lexeme table to assembly code.
+Since the syntax of PL0 is relatively simple, we can accomplish this with mostly <b>IF</b> and <b>ELSE</b> statements in <a href="file:///parser.c">parser.c</a>.
+We can ensure that our input compiled correctly by analyzing the assembly code output with <code>-c</code>:
+</p>
+<details id='org0c305e4' class='code' open><summary><span class="lang">shell</span></summary>
+<div class='gutter'>
+<a href='#org0c305e4'>#</a>
+<button title='Copy to clipboard' onclick='copyPreToClipbord(this)'>⎘</button></div>
+<div class="org-src-container">
+<pre class="src src-sh">./output pl0.txt -c
+</pre>
+</div>
+</details>
+<div id='orge996804' class='table'>
+<div class='gutter'><a href='#orge996804'>#</a></div>
+<div class='tabular'>
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-right">Assembly</td>
+<td class="org-right">Code:</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">Line</td>
+<td class="org-right">OP</td>
+<td class="org-left">Code</td>
+<td class="org-right">OP</td>
+<td class="org-right">Name</td>
+<td class="org-left">L</td>
+<td class="org-left">M</td>
+</tr>
+
+<tr>
+<td class="org-right">0</td>
+<td class="org-right">7</td>
+<td class="org-left">JMP</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">1</td>
+<td class="org-right">6</td>
+<td class="org-left">INC</td>
+<td class="org-right">0</td>
+<td class="org-right">4</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">3</td>
+<td class="org-right">1</td>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">2</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">4</td>
+<td class="org-right">1</td>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">5</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">5</td>
+<td class="org-right">2</td>
+<td class="org-left">MUL</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">6</td>
+<td class="org-right">2</td>
+<td class="org-left">ADD</td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">7</td>
+<td class="org-right">1</td>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">28</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">8</td>
+<td class="org-right">1</td>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">4</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">9</td>
+<td class="org-right">2</td>
+<td class="org-left">DIV</td>
+<td class="org-right">0</td>
+<td class="org-right">4</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">10</td>
+<td class="org-right">2</td>
+<td class="org-left">SUB</td>
+<td class="org-right">0</td>
+<td class="org-right">2</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">11</td>
+<td class="org-right">4</td>
+<td class="org-left">STO</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">12</td>
+<td class="org-right">3</td>
+<td class="org-left">LOD</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">13</td>
+<td class="org-right">9</td>
+<td class="org-left">WRT</td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">14</td>
+<td class="org-right">1</td>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">3</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">15</td>
+<td class="org-right">1</td>
+<td class="org-left">LIT</td>
+<td class="org-right">0</td>
+<td class="org-right">5</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+</tr>
+
+<tr>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: [01-24-2023]</p>
+<p class="author">Author: Hunter Smith</p>
+<p class="date">Created: 2023-01-27 Fri 14:42</p>
+</div>
+</div>
+</body>
+</html>
