@@ -89,6 +89,7 @@
 	  --text-gray-light: #444;
 	  --text-medium-light: #222;
 	  --text-dark-light: #000;
+    --icon: #000;
 
 }
 }
@@ -138,6 +139,7 @@
 	  --text-gray-light: #444;
 	  --text-medium-light: #222;
 	  --text-dark-light: #000;
+    --icon: #fff;
 }
 }
 
@@ -332,7 +334,7 @@ button,
 
 /* Style the icon bar links */
 .nav-icons > a {
-    color: black;
+    color: var(--icon);
     display: block;
     text-align: center;
     padding: 16px;
@@ -340,7 +342,7 @@ button,
     font-size: 4em;
 }
 .nav-icons > a > i:hover {
-  color: black;
+  color: var(--icon);
   text-shadow: 0 0 30px var(--accent2-light);
 }
 
@@ -415,13 +417,13 @@ blockquote > p {
 
 /* Style the icon bar links */
 .nav-contact > a {
-    color: black;
+    color: var(--icon);
     text-align: center;
     padding: 16px;
     transition: all 0.2s ease-in-out;
     font-size: 3em;
 }
 .nav-contact > a:hover {
-  color: black;
+  color: var(--icon);
   text-shadow: 0 0 30px var(--accent2-light);
 }
