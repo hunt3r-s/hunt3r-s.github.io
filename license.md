@@ -1,5 +1,5 @@
 
-    Copyright (c) 2023 Hunter Smith
+Copyright (c) 2023 Hunter Smith
 
 
 Permission is hereby granted, free of charge, to any person obtaining
