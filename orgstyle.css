@@ -149,6 +149,10 @@ summary {display: list-item}
 	font-size: 40px
 }
 
+.nav-img {
+	max-width: 10%;
+}
+
 .nav-content{
 	text-align: end;
 	display: flex;
