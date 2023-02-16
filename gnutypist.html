@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2023-02-16 Thu 14:21 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GNU Typist, why this 30 year old typing tutor is unmatched</title>
+<meta name="author" content="Hunter Smith" />
+<meta name="generator" content="org mode" />
+<meta name="theme-color" content="#77aa99" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="GNU Typist, why this 30 year old typing tutor is unmatched" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="200" />
+<meta property="og:image:height" content="200" />
+<meta property="og:image:alt" content="Decorative HS Logo" />
+<meta property="og:article:author:first_name" content="Hunter" />
+<meta property="og:article:author:last_name" content="Smith" />
+<meta property="og:article:published_time" content="2022-11-30T00:00:00-0500" />
+<meta property="og:article:modified_time" content="2023-02-02T18:25:01-0500" />
+
+<link href='http://fonts.googleapis.com/css?family=EB+Garamond' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="orgstyle.css">
+<script>
+// @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt Expat
+function copyPreToClipbord(btn) {
+    const pre = btn.parentElement.parentElement.getElementsByTagName("PRE")[0];
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    range.setEnd(pre.childNodes[pre.childNodes.length-1], 0);
+    window.getSelection().addRange(range);
+    var successful = document.execCommand('copy');
+    window.getSelection().removeRange(range);
+}
+window.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById("text-table-of-contents")) {
+        const sections = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+        const activate = (entry) => {
+            entry.classList.add('active');
+            if (["LI", "UL"].includes(entry.parentElement.tagName)) {
+                activate(entry.parentElement);
+            }
+        };
+        const activateLast = () => {
+            document.querySelectorAll('#text-table-of-contents li.active, #text-table-of-contents ul.active').forEach(a => {
+                a.classList.remove('active')
+            });
+            let mostRecent = { section: sections[0], bottom: -Infinity };
+            const windowHeight = window.innerHeight;
+            sections.forEach((section) => {
+                const bounds = section.getBoundingClientRect()
+                if ( bounds.bottom > mostRecent.bottom && bounds.top < windowHeight ) {
+                    mostRecent = { section, bottom: bounds.bottom };
+                }
+            })
+            activate(document.querySelector(`#text-table-of-contents li a[href="#${mostRecent.section.getAttribute('id')}"]`).parentElement);
+        }
+        const observer = new IntersectionObserver(entries => {
+            activateLast();
+        });
+        sections.forEach((section) => {
+            observer.observe(section);
+        });}
+});
+// @license-end
+</script>
+
+</head>
+<body>
+<div id='page'><label id='switch-label' for='theme-switch'></label><div id="content">
+<header class="page-header"><div class="page-meta"><span class="timestamp-wrapper"><span class="timestamp">February 16, 2023</span></span>, Hunter Smith</div>
+<h1 class="title">GNU Typist, why this 30 year old typing tutor is unmatched</h1>
+</header><nav id="table-of-contents">
+<h2><a href="#" style="color:inherit; text-decoration: none;">Table of Contents</a></h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgc821438">1. If it Ain&rsquo;t Broke&#x2026;</a></li>
+<li><a href="#org39201bf">2. Write your own lessons</a></li>
+<li><a href="#org0ad5c8e">3. Why use anything else?</a></li>
+</ul>
+</div>
+</nav>
+<div class="abstract" id="orgf20ce8c">
+<p>
+<a href="https://www.gnu.org/software/gtypist/">Gnu typist</a>is a typing tutor from the <a href="https://www.gnu.org/">GNU Project</a>. It provides a command line interface with guided typing lessons. It also provides a method of constructing your own lessons.
+It was created by Jim Meyering, and is part of the GNU project,  a well-known.   ongoing effort to create a completely free and open-source operating system. Despite its age, GNU Typist is still unmatched as a typing tutor, no modern solutions match the simplicity, portability, and effectiveness of gtypist&rsquo;s lessons.
+</p>
+
+</div>
+
+<div id="outline-container-orgc821438" class="outline-2">
+<h2 id="orgc821438"><span class="section-number-2">1.</span> If it Ain&rsquo;t Broke&#x2026;</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+I have recently come to realize that touch typing is an incredibly valuable skill, one that I lack. As a result, I have been exploring a rabbit hole of
+touch typing tutors, both online and desktop based.  Some of the services I have tried include
+</p>
+<ul class="org-ul">
+<li><a href="https://www.keybr.com/">keybr.com</a></li>
+<li><a href="https://10fastfingers.com/">10fastfingers</a></li>
+<li>and of course, <a href="https://play.typeracer.com/">typeracer</a>.
+While all of these typing tutors and games have their merits, I have not found any useful features present in these services, that are absent in GNU Typist.</li>
+</ul>
+<p>
+In fact, many of these services lack the element that sets gtypist apart, guided  lessons. I have not found another typing tutor that provides specific instructions
+on where to place each finger. This is somewhat surprising to me, since it is the single most important aspect of touch typing.
+For example, if you have never touch typed before, you may like to start off with the basic QWERTY course.  It teaches touch typing in a proper, starting with the home row and gradually introducing new keys and finger combinations. The program provides speed drills to practice each new skill before moving on, ensuring you have a solid foundation before progressing. No frills.
+</p>
+
+
+<figure id="org807b592">
+<img src="graphics/gtypistlesson.png" alt="gtypistlesson.png">
+
+<figcaption><span class="figure-number">Figure 1: </span>The gtypist QWERTY course instructions and drills</figcaption>
+</figure>
+
+
+<figure id="org5aefc69">
+<img src="graphics/gtypistdrill.png" alt="gtypistdrill.png">
+
+</figure>
+
+<p>
+This course took me from 10WPM to 30+WPM within a week of learning to touch type.
+While other typing services provide fancy GUIs and fun stuff, gtypist focuses on what is important,
+teaching the user to type accurately and quickly.
+</p>
+</div>
+</div>
+<div id="outline-container-org39201bf" class="outline-2">
+<h2 id="org39201bf"><span class="section-number-2">2.</span> Write your own lessons</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Another massive advantage of gtypist is the ability to write custom lessons. This opens the door to
+community developed lessons. Gtypist can be run with an optional argument, which points a custom
+.typ file which contains lessons. Lessons are written in a light markup language (I&rsquo;m not sure if it has a name).
+Within the custom files, you can specify lesson information, such as instructions for typing, and custom text
+for the drills.
+The <a href="https://www.gnu.org/software/gtypist/doc/">GNU Typist documentation</a> provides detailed information for constructing custom lessons.
+For example, I wrote a short Python script to generate <a href="https://github.com/hunt3r-s/gtypist-shakespeare"> lessons</a> from the works of Shakespeare.  The .typ
+file for Shakespeare&rsquo;s Hamlet, looks something like this:
+</p>
+
+
+<figure id="org5f734f1">
+<img src="graphics/hamlettyp.png" alt="hamlettyp.png">
+
+</figure>
+
+<p>
+and the generated lesson looks like:
+</p>
+
+
+<figure id="orgde58a62">
+<img src="graphics/hamlethome.png" alt="hamlethome.png">
+
+<figcaption><span class="figure-number">Figure 2: </span>GNU Typist Hamlet, home screen</figcaption>
+</figure>
+
+
+<figure id="org3e1f548">
+<img src="graphics/hamlethome.png" alt="hamlethome.png">
+
+<figcaption><span class="figure-number">Figure 1: </span>GNU Typist Hamlet,  warmup intro</figcaption>
+</figure>
+<p>
+This is probably my favorite feature of gtypist, I usually find a piece of famous literature,
+with difficult punctuation and prose, and create lessons to pracitce typing difficult test.
+It is also extremely useful for practicing source code. Just find some source code, and structure the
+lessons however your heart desires.
+</p>
+</div>
+</div>
+<div id="outline-container-org0ad5c8e" class="outline-2">
+<h2 id="org0ad5c8e"><span class="section-number-2">3.</span> Why use anything else?</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+While I may not feel the need to explore any other typing services, I can see a few reasons why gtypist
+might be insufficient for some learners.
+</p>
+<ul class="org-ul">
+<li>Typing Games
+If you are someone who likes to compete against other people, or practice typing  in a game-like environment,
+gtypist may not be for you. It can get a bit lonely typing to yourself.</li>
+<li>Scared of the command line
+If you don&rsquo;t like the command line, or just prefer GUIs, gtypist may not be for you. Although, it only requires one command to run,
+so it shouldn&rsquo;t be too intimidating</li>
+<li>You want in depth statistics
+If you are someone who want to deeply analyze your typing habits, GNU Typist may not be your best choice. It does, however,
+keep track of a few basic stats such as WPM history and accuracy.</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2023-02-15 Wed 00:00</p>
+<p class="author">Author: Hunter Smith</p>
+<p class="date">Created: 2023-02-16 Thu 14:21</p>
+</div>
+</div>
+</body>
+</html>
